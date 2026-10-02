@@ -7,6 +7,10 @@ specification in, a scene, SVG or EVG drawing out, on every Ranger target.
 official Vega and what is not there yet; [`vela/CHART_API.md`](vela/CHART_API.md)
 is the chart API.
 
+The [site](https://terotests.github.io/VelaCharts/) is the page you paste a
+specification into and the [chart API reference](https://terotests.github.io/VelaCharts/api/),
+built from `main` by `.github/workflows/deploy-pages.yml`.
+
 Vela was developed in Ranger's `gallery/vela` until it moved here, with its
 history.
 

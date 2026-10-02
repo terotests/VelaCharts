@@ -1,0 +1,87 @@
+name: Deploy Pages
+
+# The site is the paste-a-specification page (vela/web) and the chart API
+# pages under api/. Both are built as in Ranger's own pages workflow: in a
+# Ranger checkout beside this repository, with vela/ copied to its
+# gallery/vela (scripts/ranger.mjs).
+#
+# The chart API is built by each ecosystem's own tool -- documentation.js,
+# pdoc, Dokka and dartdoc -- over the packages `-apipackage` writes; --require
+# fails the build when one of them did not run.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: VelaCharts
+
+      - uses: actions/checkout@v4
+        with:
+          repository: terotests/Ranger
+          path: Ranger
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Ranger/package-lock.json
+
+      - name: Install Ranger
+        working-directory: Ranger
+        run: npm ci
+
+      # Gradle for Dokka is already on the runner.
+      - name: Install the documentation toolchains
+        working-directory: Ranger
+        run: |
+          npm install --no-save --no-audit --no-fund documentation
+          python3 -m pip install --quiet --disable-pip-version-check pdoc
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Build the page
+        working-directory: VelaCharts
+        run: npm run web -- --out "$GITHUB_WORKSPACE/_site"
+        env:
+          RANGER_ROOT: ${{ github.workspace }}/Ranger
+
+      - name: Check every API toolchain ran
+        working-directory: Ranger
+        run: |
+          node gallery/vela/web/build-api-docs.mjs --out "$GITHUB_WORKSPACE/_site/api" --require
+          test -s "$GITHUB_WORKSPACE/_site/index.html"
+          test -s "$GITHUB_WORKSPACE/_site/api/index.html"
+          test -s "$GITHUB_WORKSPACE/_site/api/javascript/index.html"
+          test -s "$GITHUB_WORKSPACE/_site/api/python/vela_chart.html"
+          test -s "$GITHUB_WORKSPACE/_site/api/kotlin/index.html"
+          test -s "$GITHUB_WORKSPACE/_site/api/dart/index.html"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
