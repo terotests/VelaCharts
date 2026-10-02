@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+# Vela builds with a Ranger checkout's compiler and imports a few of its
+# gallery trees (scripts/ranger.mjs says which), so the job checks out
+# terotests/Ranger beside this repository, copies vela/ into it and runs the
+# suite there. The parity steps compare against official Vega; they are
+# installed so that those steps run rather than report that nothing was
+# compared.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: VelaCharts
+
+      - uses: actions/checkout@v4
+        with:
+          repository: terotests/Ranger
+          path: Ranger
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: npm
+          cache-dependency-path: Ranger/package-lock.json
+
+      - name: Install Ranger
+        working-directory: Ranger
+        run: |
+          npm ci
+          npm install --no-save --no-audit --no-fund vega vega-lite
+
+      - name: Vela tests
+        working-directory: VelaCharts
+        run: npm test
+        env:
+          RANGER_ROOT: ${{ github.workspace }}/Ranger
+
+      - name: The paste-a-specification page builds
+        working-directory: VelaCharts
+        run: npm run web
+        env:
+          RANGER_ROOT: ${{ github.workspace }}/Ranger

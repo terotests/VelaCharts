@@ -1,0 +1,4 @@
+node_modules/
+# Build output, when vela/ is used in place inside a Ranger checkout
+vela/bin/
+vela/web/dist/

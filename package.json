@@ -1,0 +1,26 @@
+{
+  "name": "velacharts",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vela: a Vega-compatible visualization runtime written in Ranger",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terotests/VelaCharts.git"
+  },
+  "scripts": {
+    "test": "node scripts/ranger.mjs vela:test",
+    "cpp": "node scripts/ranger.mjs vela:cpp",
+    "web": "node scripts/ranger.mjs vela:web",
+    "web:test": "node scripts/ranger.mjs vela:web:test",
+    "showcase": "node scripts/ranger.mjs vela:showcase",
+    "chart": "node scripts/ranger.mjs vela:chart",
+    "chart:check": "node scripts/ranger.mjs vela:chart:check",
+    "parity": "node scripts/ranger.mjs vela:parity",
+    "render": "node scripts/ranger.mjs vela:render",
+    "compiler": "node scripts/ranger.mjs vela:compiler",
+    "coverage": "node scripts/ranger.mjs vela:coverage",
+    "aria": "node scripts/ranger.mjs vela:aria",
+    "types": "node scripts/ranger.mjs vela:types"
+  }
+}
